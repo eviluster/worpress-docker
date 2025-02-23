@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: wordpress
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512Mi
+  wordpress:
+    image: wordpress:6.2
+    depends_on:
+      - db
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: postgres
+      WORDPRESS_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      WORDPRESS_DB_NAME: wordpress
+    ports:
+      - "80:80"
+    volumes:
+      - ./wp-config.php:/usr/src/apache/htdocs/wp-config.php
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512Mi
+
+volumes:
+  db_data:
