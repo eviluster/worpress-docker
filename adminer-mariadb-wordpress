@@ -1,0 +1,50 @@
+version: '3.9'
+
+services:
+  db:
+    image: mariadb:10.6.1
+    container_name: mariadb-wordpress
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    volumes:
+      - ./wordpress_db_data:/var/lib/mysql
+    expose:
+      - 3306
+
+  adminer1:
+    image: adminer
+    container_name: adminer-wordpress
+    links:
+      - db:db
+    restart: always
+    ports:
+      - 8082:8080
+
+  wordpress:
+    image: wordpress:latest
+    container_name: web-wordpres
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD}
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+    volumes:
+      - ./wordpress_app_data:/var/www/html
+    links:
+      - db:db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  wordpress_db_data:
+  wordpress_app_data:
